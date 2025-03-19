@@ -13,8 +13,8 @@ def on_team_change():
     st.session_state.team_selected = st.session_state.team_selectbox
 
 # Cargar datos
-nt_data = pd.read_csv('./../2024_nba_player_stats.csv')
-t_data = pd.read_csv('./../2024_nba_player_stats.csv')
+nt_data = pd.read_csv('./2024_nba_player_stats.csv')
+t_data = pd.read_csv('./NuevoArchivo.csv')
 
 # Cargar logo
 logo = io.imread(r"./images/nba_logo.png")
@@ -49,7 +49,10 @@ st.sidebar.markdown("## MENÚ DE CONFIGURACIÓN")
 st.sidebar.divider()
 
 # Lista de equipos disponibles
-teams = df["Team"].unique().tolist()
+if(st.session_state.df_selected == "nt_data"):
+    teams = df["Team"].unique().tolist()
+else:
+    teams = df["Equipo"].unique().tolist()
 
 # Inicializar el estado de sesión si no existe
 if "team_selected" not in st.session_state:
@@ -68,22 +71,42 @@ st.sidebar.divider()
 st.sidebar.image(logo)
 
 # Filtrar datos del equipo seleccionado (o por defecto)
-filtered_data = df[df["Team"] == st.session_state.team_selected]
+if(st.session_state.df_selected == "nt_data"):
+    filtered_data = df[df["Team"] == st.session_state.team_selected]
+else:
+    filtered_data = df[df["Equipo"] == st.session_state.team_selected]
 
 # Crear instancia de Graphics
 graphics = Graphics(df, st.session_state.team_selected, filtered_data)
 
+df
+
 # Generar gráficos solo una vez (con el equipo seleccionado o por defecto)
-graphics.team_points_pie_chart_diagram()
-graphics.age_line_diagram()
+if(st.session_state.df_selected == "nt_data"):
+    graphics.team_points_pie_chart_diagram()
+    graphics.age_line_diagram()
 
-st.divider()
-st.title("Estadísticas de NBA por Equipo")
-col1, col2 = st.columns(2)
-with col1:
-    graphics.pts_per_team_histogram_diagram()
+    st.divider()
+    st.title("Estadísticas de NBA por Equipo")
+    col1, col2 = st.columns(2)
+    with col1:
+        graphics.pts_per_team_histogram_diagram()
 
-with col2:
-    graphics.ast_per_team_histogram_diagram()
+    with col2:
+        graphics.ast_per_team_histogram_diagram()
 
-graphics.pts_ast_scatter_diagram()
+    graphics.pts_ast_scatter_diagram()
+else:
+    graphics.team_points_pie_chart_diagram("Equipo", "Puntos_Totales")
+    graphics.age_line_diagram("Edad", "Puntos_Totales")
+
+    st.divider()
+    st.title("Estadísticas de NBA por Equipo")
+    col1, col2 = st.columns(2)
+    with col1:
+        graphics.pts_per_team_histogram_diagram("Nombre_Jugador", "Puntos_Totales")
+
+    with col2:
+        graphics.ast_per_team_histogram_diagram("Nombre_Jugador", "Asistencias")
+
+    graphics.pts_ast_scatter_diagram("Puntos_Totales", "Asistencias", "Posición")

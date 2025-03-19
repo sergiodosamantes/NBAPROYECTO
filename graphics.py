@@ -22,22 +22,22 @@ class Graphics:
         self.filtered_data = filtered_data
         self.team_selected = team_selected
 
-    def team_points_pie_chart_diagram(self):
+    def team_points_pie_chart_diagram(self, team_column = "Team", points_column = "PTS"):
         """
         Gráfico de pastel: Proporción de puntos por equipo.
         """
         st.subheader("Proporción de Puntos por Equipo")
 
         # Agrupar por equipo y sumar puntos
-        total_points_by_team = self.df_data.groupby("Team")["PTS"].sum().reset_index()
+        total_points_by_team = self.df_data.groupby(team_column)[points_column].sum().reset_index()
 
         # Inicialización del gráfico
         fig, ax = plt.subplots(figsize=(8, 8))
 
         # Crear la gráfica de pastel
         ax.pie(
-            total_points_by_team["PTS"],
-            labels=total_points_by_team["Team"],
+            total_points_by_team[points_column],
+            labels=total_points_by_team[team_column],
             autopct='%1.1f%%',
             colors=sns.color_palette("coolwarm", len(total_points_by_team))
         )
@@ -46,7 +46,7 @@ class Graphics:
         # Mostrar el gráfico en Streamlit
         st.pyplot(fig)
 
-    def pts_per_team_histogram_diagram(self):
+    def pts_per_team_histogram_diagram(self, player_column = "PName", points_column = "PTS"):
         """
         Histograma de puntos por jugador para un equipo seleccionado.
         """
@@ -54,7 +54,7 @@ class Graphics:
         fig, ax = plt.subplots(figsize=(6, 3))
 
         # Generar el histograma
-        sns.barplot(x=self.filtered_data["PName"], y=self.filtered_data["PTS"], palette="coolwarm", ax=ax)
+        sns.barplot(x=self.filtered_data[player_column], y=self.filtered_data[points_column], palette="coolwarm", ax=ax)
         ax.set_title(f"Histograma de Puntos por Jugador - {self.team_selected}")
         ax.set_xlabel("Jugador")
         ax.set_ylabel("Puntos")
@@ -63,7 +63,7 @@ class Graphics:
         # Mostrar el gráfico en Streamlit
         st.pyplot(fig)
 
-    def ast_per_team_histogram_diagram(self):
+    def ast_per_team_histogram_diagram(self, player_column = "PName", asistence_column = "AST"):
         """
         Histograma de asistencias por jugador para un equipo seleccionado.
         """
@@ -71,7 +71,7 @@ class Graphics:
         fig, ax = plt.subplots(figsize=(6, 3))
 
         # Generar el histograma
-        sns.barplot(x=self.filtered_data["PName"], y=self.filtered_data["AST"], palette="coolwarm", ax=ax)
+        sns.barplot(x=self.filtered_data[player_column], y=self.filtered_data[asistence_column], palette="coolwarm", ax=ax)
         ax.set_title(f"Histograma de Asistencias por Jugador - {self.team_selected}")
         ax.set_xlabel("Jugador")
         ax.set_ylabel("Asistencias")
@@ -80,40 +80,40 @@ class Graphics:
         # Mostrar el gráfico en Streamlit
         st.pyplot(fig)
 
-    def pts_ast_scatter_diagram(self):
+    def pts_ast_scatter_diagram(self, points_column = "PTS", asistence_column = "AST", position_column = "POS"):
         """
         Gráfico de dispersión: Puntos vs. Asistencias.
         """
         st.subheader("Puntos vs. Asistencias")
         fig, ax = plt.subplots(figsize=(6, 3))
-        sns.scatterplot(data=self.filtered_data, x="PTS", y="AST", hue="POS", palette="coolwarm", ax=ax)
+        sns.scatterplot(data=self.filtered_data, x=points_column, y=asistence_column, hue=position_column, palette="coolwarm", ax=ax)
         ax.set_title(f"Puntos vs. Asistencias - {self.team_selected}")
         ax.set_xlabel("Puntos")
         ax.set_ylabel("Asistencias")
         st.pyplot(fig)
 
-    def age_line_diagram(self):
+    def age_line_diagram(self, age_column = "Age", points_column = "PTS"):
         """
         Diagrama de línea: Evolución de puntos por edad.
         """
         st.subheader("Evolución de Puntos por Edad")
 
         # Crear rangos de edad
-        ticks = list(range(int(self.df_data["Age"].min()), int(self.df_data["Age"].max()) + 1, 3))
+        ticks = list(range(int(self.df_data[age_column].min()), int(self.df_data[age_column].max()) + 1, 3))
         self.df_data["Age Group"] = pd.cut(
-            self.df_data["Age"],
+            self.df_data[age_column],
             bins=ticks,
             labels=[f"{ticks[i]}-{ticks[i+1]-1}" for i in range(len(ticks)-1)]
         )
 
         # Promediar puntos por edad
-        avg_points_by_age = self.df_data.groupby("Age")["PTS"].mean().reset_index()
+        avg_points_by_age = self.df_data.groupby(age_column)[points_column].mean().reset_index()
 
         # Inicialización del gráfico
         fig, ax = plt.subplots(figsize=(6, 3))
 
         # Crear el diagrama de línea
-        sns.lineplot(data=avg_points_by_age, x="Age", y="PTS", marker="o", color="blue", ax=ax)
+        sns.lineplot(data=avg_points_by_age, x=age_column, y=points_column, marker="o", color="blue", ax=ax)
         ax.set_title("Evolución de Puntos por Edad")
         ax.set_xlabel("Edad")
         ax.set_ylabel("Puntos Promedio")
