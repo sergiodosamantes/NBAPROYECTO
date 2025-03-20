@@ -4,32 +4,24 @@ import seaborn as sns
 import streamlit as st
 
 class Graphics:
-    def __init__(self, df_data, team_selected, filtered_data):
+    def __init__(self, df_data, team_selected, filtered_data, filtered_data_year_only):
         """
         Constructor de la clase Graphips.
         :param df_data: DataFrame que contiene los datos a graficar.
         """
         self.df_data = df_data
         self.filtered_data = filtered_data
+        self.filtered_data_year_only = filtered_data_year_only
         self.team_selected = team_selected
 
-    def set_team_selected(self, team_selected, filtered_data):
-        """
-        Método para actualizar el equipo seleccionado.
-        :param team_selected: Nuevo equipo seleccionado.
-        :param filtered_data: Nueva info por equipo.
-        """
-        self.filtered_data = filtered_data
-        self.team_selected = team_selected
-
-    def team_points_pie_chart_diagram(self, team_column = "Team", points_column = "PTS"):
+    def team_points_pie_chart_diagram(self, team_column, points_column):
         """
         Gráfico de pastel: Proporción de puntos por equipo.
         """
         st.subheader("Proporción de Puntos por Equipo")
 
         # Agrupar por equipo y sumar puntos
-        total_points_by_team = self.df_data.groupby(team_column)[points_column].sum().reset_index()
+        total_points_by_team = self.filtered_data_year_only.groupby(team_column)[points_column].sum().reset_index()
 
         # Inicialización del gráfico
         fig, ax = plt.subplots(figsize=(8, 8))
@@ -46,7 +38,7 @@ class Graphics:
         # Mostrar el gráfico en Streamlit
         st.pyplot(fig)
 
-    def pts_per_team_histogram_diagram(self, player_column = "PName", points_column = "PTS"):
+    def pts_per_team_histogram_diagram(self, player_column, points_column):
         """
         Histograma de puntos por jugador para un equipo seleccionado.
         """
@@ -63,7 +55,7 @@ class Graphics:
         # Mostrar el gráfico en Streamlit
         st.pyplot(fig)
 
-    def ast_per_team_histogram_diagram(self, player_column = "PName", asistence_column = "AST"):
+    def ast_per_team_histogram_diagram(self, player_column, asistence_column):
         """
         Histograma de asistencias por jugador para un equipo seleccionado.
         """
@@ -80,7 +72,7 @@ class Graphics:
         # Mostrar el gráfico en Streamlit
         st.pyplot(fig)
 
-    def pts_ast_scatter_diagram(self, points_column = "PTS", asistence_column = "AST", position_column = "POS"):
+    def pts_ast_scatter_diagram(self, points_column, asistence_column, position_column):
         """
         Gráfico de dispersión: Puntos vs. Asistencias.
         """
@@ -92,22 +84,26 @@ class Graphics:
         ax.set_ylabel("Asistencias")
         st.pyplot(fig)
 
-    def age_line_diagram(self, age_column = "Age", points_column = "PTS"):
+    def age_line_diagram(self, age_column, points_column):
         """
         Diagrama de línea: Evolución de puntos por edad.
         """
         st.subheader("Evolución de Puntos por Edad")
 
+        # Convertir la columna de edad a numérica y omitir valores no válidos
+        self.filtered_data_year_only[age_column] = pd.to_numeric(self.filtered_data_year_only[age_column], errors='coerce')
+        self.filtered_data_year_only.dropna(subset=[age_column], inplace=True)  # Eliminar filas con valores inválidos
+
         # Crear rangos de edad
-        ticks = list(range(int(self.df_data[age_column].min()), int(self.df_data[age_column].max()) + 1, 3))
-        self.df_data["Age Group"] = pd.cut(
-            self.df_data[age_column],
+        ticks = list(range(int(self.filtered_data_year_only[age_column].min()), int(self.filtered_data_year_only[age_column].max()) + 1, 3))
+        self.filtered_data_year_only["Age Group"] = pd.cut(
+            self.filtered_data_year_only[age_column],
             bins=ticks,
             labels=[f"{ticks[i]}-{ticks[i+1]-1}" for i in range(len(ticks)-1)]
         )
 
         # Promediar puntos por edad
-        avg_points_by_age = self.df_data.groupby(age_column)[points_column].mean().reset_index()
+        avg_points_by_age = self.filtered_data_year_only.groupby(age_column)[points_column].mean().reset_index()
 
         # Inicialización del gráfico
         fig, ax = plt.subplots(figsize=(6, 3))
