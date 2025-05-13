@@ -6,6 +6,7 @@ import streamlit as st
 import random
 from skimage import io
 from graphics import Graphics
+from linearRegresion import LinearRegressionViewer
 
 # Función para manejar el cambio de equipo
 def on_team_change():
@@ -19,6 +20,7 @@ def on_year_change():
 
 # Cargar datos
 t_data = pd.read_csv('./Archivo_Unido.csv')
+model_linear_data = pd.read_csv('./nba_predictive_lin_dataset.csv')
 nt_data = pd.read_csv('./2024_nba_player_stats.csv')
 
 # Cargar logo
@@ -100,6 +102,7 @@ else:
 
 # Crear instancia de Graphics
 graphics = Graphics(df, st.session_state.team_selected, filtered_data, filtered_data_year_only)
+linearRegression = LinearRegressionViewer(df, st.session_state.team_selected)
 
 df
 
@@ -132,3 +135,6 @@ else:
         graphics.ast_per_team_histogram_diagram("Nombre_Jugador", "Asistencias")
 
     graphics.pts_ast_scatter_diagram("Puntos_Totales", "Asistencias", "Posición")
+
+st.divider()
+st.title("Regresion Linear")
