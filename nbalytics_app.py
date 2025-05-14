@@ -148,7 +148,6 @@ linearRegression.get_scatter_plot_with_metrics()
 
 st.divider()
 st.title("Modelo Arbol de Decision")
-st.text("Predice el número de ")
 
 input_data = {
     'Minutos_Jugados': st.slider("Minutos Jugados", min_value=0, max_value=5000, value=2500),
