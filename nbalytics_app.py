@@ -7,6 +7,7 @@ import random
 from skimage import io
 from graphics import Graphics
 from linearRegresion import LinearRegressionViewer
+from decisionTree import DecisionTreeViewer
 
 # Función para manejar el cambio de equipo
 def on_team_change():
@@ -20,7 +21,6 @@ def on_year_change():
 
 # Cargar datos
 t_data = pd.read_csv('./Archivo_Unido.csv')
-model_linear_data = pd.read_csv('./nba_predictive_lin_dataset.csv')
 nt_data = pd.read_csv('./2024_nba_player_stats.csv')
 
 # Cargar logo
@@ -102,7 +102,8 @@ else:
 
 # Crear instancia de Graphics
 graphics = Graphics(df, st.session_state.team_selected, filtered_data, filtered_data_year_only)
-linearRegression = LinearRegressionViewer(df, st.session_state.team_selected)
+linearRegression = LinearRegressionViewer(t_data)
+decisionTree = DecisionTreeViewer(t_data)
 
 df
 
@@ -137,4 +138,33 @@ else:
     graphics.pts_ast_scatter_diagram("Puntos_Totales", "Asistencias", "Posición")
 
 st.divider()
-st.title("Regresion Linear")
+st.title("Modelo Regresion Linear")
+st.text("Predice el número de asistencias según los parámetros los robos, bloqueos y tiros libres hechos por un jugador")
+linearRegression.prediction_interface()
+st.divider()
+st.text("Criterios de evaluación")
+linearRegression.get_mean_square_error_graph()
+linearRegression.get_scatter_plot_with_metrics()
+
+st.divider()
+st.title("Modelo Arbol de Decision")
+st.text("Predice el número de ")
+
+input_data = {
+    'Minutos_Jugados': st.slider("Minutos Jugados", min_value=0, max_value=5000, value=2500),
+    'Tiros_Campo_Encestados': st.slider("Tiros de Campo Encestados", min_value=0, max_value=1000, value=500),
+    'Tiros_Campo_Intentados': st.slider("Tiros de Campo Intentados", min_value=0, max_value=2000, value=1000),
+    'Tiros_Libres_Intentados': st.slider("Tiros Libres Intentados", min_value=0, max_value=600, value=300),
+    'Robos': st.slider("Robos", min_value=0, max_value=100, value=50),
+    'Bloqueos': st.slider("Bloqueos", min_value=0, max_value=100, value=50),
+    'Triple_Dobles': st.slider("Triple-Dobles", min_value=0, max_value=100, value=50),
+}
+nuevo_df = pd.DataFrame([input_data])
+
+prediccion, probabilidad = decisionTree.predict_with_proba(nuevo_df)
+st.subheader("Predicción en tiempo real")
+st.write(f"¿Doble-Doble?: {prediccion} ({probabilidad*100:.2f}%)")
+
+st.divider()
+decisionTree.get_decision_tree()
+decisionTree.cross_matrix()
